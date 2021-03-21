@@ -1,0 +1,9 @@
+[package]
+authors = ["Dispersia <dispersias@gmail.com>"]
+edition = "2018"
+name = "test_rhai"
+version = "0.1.0"
+
+[dependencies]
+bevy_ecs = {git = "https://github.com/bevyengine/bevy", branch = "main"}
+rhai = {git = "https://github.com/rhaiscript/rhai", features = ["sync"]}
