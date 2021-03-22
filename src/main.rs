@@ -1,6 +1,6 @@
 mod script_manager;
 
-use std::fmt::Display;
+use std::{fmt::Display, time::Instant};
 
 use script_manager::{BehaviorType, ScriptManager};
 
@@ -30,9 +30,14 @@ fn main() -> Result<(), Box<EvalAltResult>> {
     let script_manager = create_script_manager()?;
 
     let result = script_manager.get_script(1, BehaviorType::Combat).unwrap();
+
+    let start = Instant::now();
     script_manager
         .get_engine()
         .eval_ast_with_scope(&mut scope, &result)?;
+    let end = Instant::now();
+
+    println!("{}", (end - start).as_millis());
 
     Ok(())
 }

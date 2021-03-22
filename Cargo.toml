@@ -7,3 +7,7 @@ version = "0.1.0"
 [dependencies]
 bevy_ecs = {git = "https://github.com/bevyengine/bevy", branch = "main"}
 rhai = {git = "https://github.com/rhaiscript/rhai", features = ["sync"]}
+
+[profile.release]
+lto = 'thin'
+codegen-units = 1
