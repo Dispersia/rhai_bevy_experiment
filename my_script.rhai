@@ -7,3 +7,9 @@ const healths = get_health(world);
 for health in healths {
     print(health);
 }
+
+const positions = get_positions(world);
+
+for position in positions {
+    print(position);
+}

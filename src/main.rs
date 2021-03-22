@@ -5,7 +5,7 @@ use std::{fmt::Display, time::Instant};
 use script_manager::{BehaviorType, ScriptManager};
 
 use bevy_ecs::prelude::*;
-use rhai::{Array, Dynamic, EvalAltResult, Scope};
+use rhai::{Array, Dynamic, EvalAltResult, Map, Scope};
 
 fn main() -> Result<(), Box<EvalAltResult>> {
     let mut world = World::new();
@@ -65,6 +65,47 @@ pub struct Position {
     y: f32,
 }
 
+impl Position {
+    pub fn get_value(&mut self) -> Map {
+        let mut map = Map::new();
+
+        map.insert("x".into(), Dynamic::from(self.x));
+        map.insert("y".into(), Dynamic::from(self.y));
+
+        map
+    }
+}
+
+impl Display for Position {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "Position {{ x: {}, y: {} }}", self.x, self.y)
+    }
+}
+
+impl From<Position> for Dynamic {
+    fn from(position: Position) -> Self {
+        Dynamic::from(position)
+    }
+}
+
+impl From<&Position> for Dynamic {
+    fn from(position: &Position) -> Self {
+        Dynamic::from(position.clone())
+    }
+}
+
+impl From<Health> for Dynamic {
+    fn from(health: Health) -> Self {
+        Dynamic::from(health)
+    }
+}
+
+impl From<&Health> for Dynamic {
+    fn from(health: &Health) -> Self {
+        Dynamic::from(health.clone())
+    }
+}
+
 pub fn get_characters(world: std::sync::Arc<World>) -> Array {
     world
         .entities()
@@ -77,11 +118,21 @@ pub fn get_characters(world: std::sync::Arc<World>) -> Array {
 
 pub fn get_health(world: &mut std::sync::Arc<World>) -> Array {
     let world = std::sync::Arc::get_mut(world).unwrap();
-    
+
     let mut query = world.query::<&Health>();
     query
         .iter(world)
-        .map(|h| Dynamic::from(h.clone()))
+        .map(|h| h.into())
+        .collect::<Vec<Dynamic>>()
+}
+
+pub fn get_position(world: &mut std::sync::Arc<World>) -> Array {
+    let world = std::sync::Arc::get_mut(world).unwrap();
+
+    let mut query = world.query::<&Position>();
+    query
+        .iter(world)
+        .map(|p| p.into())
         .collect::<Vec<Dynamic>>()
 }
 
@@ -96,9 +147,11 @@ fn create_script_manager() -> Result<ScriptManager, Box<EvalAltResult>> {
         .register_get("value", Health::get_value)
         .register_fn("print", |h: &mut Health| h.to_string())
         .register_type::<Position>()
+        .register_get("value", Position::get_value)
+        .register_fn("print", |p: &mut Position| p.to_string())
         .register_fn("get_characters", get_characters)
-        .register_fn("get_health", get_health);
-    //.register_iterator::<Vec<usize>>();
+        .register_fn("get_health", get_health)
+        .register_fn("get_positions", get_position);
 
     Ok(script_manager)
 }

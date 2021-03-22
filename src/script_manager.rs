@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use rhai::{AST, Engine, EvalAltResult};
+use rhai::{AST, Engine, EvalAltResult, OptimizationLevel};
 
 pub struct ScriptManager{
     engine: Engine,
@@ -9,8 +9,11 @@ pub struct ScriptManager{
 
 impl ScriptManager {
     pub fn new() -> Self {
+        let mut engine = Engine::new();
+        engine.set_optimization_level(OptimizationLevel::Full);
+
         ScriptManager {
-            engine: Engine::new(),
+            engine,
             asts: HashMap::new(),
         }
     }
