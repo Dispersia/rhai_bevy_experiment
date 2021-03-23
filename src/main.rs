@@ -1,6 +1,6 @@
 mod script_manager;
 
-use std::{fmt::Display, time::Instant};
+use std::{fmt::Display, sync::{Arc, Mutex}, time::Instant};
 
 use script_manager::{BehaviorType, ScriptManager};
 
@@ -25,7 +25,7 @@ fn main() -> Result<(), Box<EvalAltResult>> {
 
     let mut scope = Scope::new();
 
-    scope.push("world", std::sync::Arc::new(world));
+    scope.push("world", Arc::new(Mutex::new(world)));
 
     let script_manager = create_script_manager()?;
 
@@ -106,8 +106,8 @@ impl From<&Health> for Dynamic {
     }
 }
 
-pub fn get_characters(world: std::sync::Arc<World>) -> Array {
-    world
+pub fn get_characters(world: Arc<Mutex<World>>) -> Array {
+    world.lock().unwrap()
         .entities()
         .meta
         .iter()
@@ -116,22 +116,22 @@ pub fn get_characters(world: std::sync::Arc<World>) -> Array {
         .collect::<Vec<Dynamic>>()
 }
 
-pub fn get_health(world: &mut std::sync::Arc<World>) -> Array {
-    let world = std::sync::Arc::get_mut(world).unwrap();
+pub fn get_health(world: &mut Arc<Mutex<World>>) -> Array {
+    let mut world = world.lock().unwrap();
 
     let mut query = world.query::<&Health>();
     query
-        .iter(world)
+        .iter(&world)
         .map(|h| h.into())
         .collect::<Vec<Dynamic>>()
 }
 
-pub fn get_position(world: &mut std::sync::Arc<World>) -> Array {
-    let world = std::sync::Arc::get_mut(world).unwrap();
+pub fn get_position(world: &mut Arc<Mutex<World>>) -> Array {
+    let mut world = world.lock().unwrap();
 
     let mut query = world.query::<&Position>();
     query
-        .iter(world)
+        .iter(&world)
         .map(|p| p.into())
         .collect::<Vec<Dynamic>>()
 }
